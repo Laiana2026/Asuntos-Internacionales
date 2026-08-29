@@ -277,8 +277,8 @@
             const horaMinDecimal = horas + (minutos / 60);
             const horaActualStr = String(horas).padStart(2, '0') + ":" + String(minutos).padStart(2, '0');
 
-            // Habilitado de 07:00 a 10:00 o de 17:00 a 22:00
-            const esHorarioValido = (horaMinDecimal >= 7.0 && horaMinDecimal <= 10.0) || (horaMinDecimal >= 17.0 && horaMinDecimal <= 22.0);
+            // Habilitado de 07:00 a 09:00 o de 17:00 a 22:00
+            const esHorarioValido = (horaMinDecimal >= 7.0 && horaMinDecimal <= 9.0) || (horaMinDecimal >= 17.0 && horaMinDecimal <= 22.0);
 
             if (!esHorarioValido) {
                 btnIngresar.disabled = true;
