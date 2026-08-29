@@ -735,9 +735,14 @@ function iniciarSesion() {
   btnIngresar.disabled = true;
   mostrarEstadoLogin("Validando credenciales...", "cargando");
 
-  // Dejamos que el servidor verifique el usuario, la contraseña y el horario de forma centralizada.
-  // Si está fuera de horario, el servidor registrará la alerta automáticamente y devolverá el mensaje de error.
   const enviarPeticionLogin = (lat = "", lon = "") => {
+    // Verificamos si google.script.run existe antes de invocarlo para prevenir errores fatales
+    if (typeof google === 'undefined' || !google.script || !google.script.run) {
+      mostrarEstadoLogin("❌ Error: Este entorno no soporta Google Apps Script. Ábralo desde el enlace web desplegado.", "error");
+      btnIngresar.disabled = false;
+      return;
+    }
+
     google.script.run
       .withSuccessHandler(function(res) {
         if (res && res.exito) {
@@ -868,6 +873,12 @@ function buscarCedulaEnServidor(cedula) {
 
   ultimaCedulaBuscada = cedula;
 
+  if (typeof google === 'undefined' || !google.script || !google.script.run) {
+    estadoCedula.textContent = "❌ Entorno Apps Script no disponible.";
+    estadoCedula.className = "cedula-error";
+    return;
+  }
+
   google.script.run
 
     .withSuccessHandler(function(respuesta) {
@@ -957,7 +968,7 @@ function enviarFormulario() {
   let horaIngresoFinal = "";
   let horaSalidaFinal = "";
 
-  const esHorarioIngreso = (horaActualDecimal >= 7.0 && horaActualDecimal <= 13.0);
+  const esHorarioIngreso = (horaActualDecimal >= 7.0 && horaActualDecimal <= 10.0);
   const esHorarioSalida = (horaActualDecimal >= 17.0 && horaActualDecimal <= 22.0);
 
   if (!esHorarioIngreso && !esHorarioSalida) {
@@ -1007,7 +1018,6 @@ function enviarFormulario() {
 
   botonEnviar.disabled = true;
 
-  // Función interna para proceder con el envío (con o sin archivo procesado)
   function procesarEnviosConArchivo(objetoArchivo) {
     mostrarEstado("📍 Obteniendo ubicación del dispositivo...", "cargando");
     mostrarEstadoUbicacion("📍 Solicitando ubicación...");
@@ -1049,6 +1059,12 @@ function enviarFormulario() {
           longitud: longitud,
           precision: precision
         };
+
+        if (typeof google === 'undefined' || !google.script || !google.script.run) {
+          mostrarEstado("❌ Error: Entorno Apps Script no disponible.", "error");
+          botonEnviar.disabled = false;
+          return;
+        }
 
         google.script.run
 
@@ -1151,7 +1167,6 @@ function enviarFormulario() {
     );
   }
 
-  // Leer archivo si fue seleccionado, transformarlo a base64 antes de ejecutar la geolocalización
   if (archivoInput.files.length > 0) {
     const file = archivoInput.files[0];
     const reader = new FileReader();
