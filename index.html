@@ -245,8 +245,7 @@
     </div>
 
     <script>
-        // ⚠️ PEGA AQUÍ TU URL DE GOOGLE APPS SCRIPT (terminada en /exec)
-        const URL_API = "https://script.google.com/macros/s/AKfycbxQ2b6f9OeogX77S2hnYucXA_RYmhT6ynGhHonahmEF0oy_GKR1Mfn24kATBaUzpSES/exec";
+        const URL_API = "https://script.google.com/macros/s/AKfycbzS9uBi3ep_3Of16cPd6hNh4FMbmkklB0KqGOdoC5LG8GiwDCVF1Sz7XLw7cDRpqBVK/exec";
 
         async function llamarAPI(datos) {
             try {
@@ -277,7 +276,6 @@
             const horaMinDecimal = horas + (minutos / 60);
             const horaActualStr = String(horas).padStart(2, '0') + ":" + String(minutos).padStart(2, '0');
 
-            // Habilitado de 07:00 a 09:00 o de 17:00 a 22:00
             const esHorarioValido = (horaMinDecimal >= 7.0 && horaMinDecimal <= 9.0) || (horaMinDecimal >= 17.0 && horaMinDecimal <= 22.0);
 
             if (!esHorarioValido) {
