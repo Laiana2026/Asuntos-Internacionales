@@ -1,454 +1,377 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Control y Registro</title>
-    <style>
-        :root {
-            --primary-color: #1a365d;
-            --secondary-color: #2b6cb0;
-            --accent-color: #3182ce;
-            --bg-color: #f7fafc;
-            --card-bg: #ffffff;
-            --text-color: #2d3748;
-            --error-color: #e53e3e;
-            --success-color: #38a169;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 600px;
-            background: var(--card-bg);
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-        }
-
-        h2 {
-            color: var(--primary-color);
-            text-align: center;
-            margin-bottom: 25px;
-            font-size: 1.5rem;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: var(--primary-color);
-            font-size: 0.9rem;
-        }
-
-        input, select, textarea {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #cbd5e0;
-            border-radius: 6px;
-            font-size: 1rem;
-            box-sizing: border-box;
-            transition: border-color 0.2s;
-        }
-
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: var(--accent-color);
-            box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
-        }
-
-        button {
-            width: 100%;
-            padding: 12px;
-            background-color: var(--secondary-color);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-
-        button:hover {
-            background-color: var(--primary-color);
-        }
-
-        button:disabled {
-            background-color: #a0aec0;
-            cursor: not-allowed;
-        }
-
-        .estado {
-            margin-top: 15px;
-            padding: 10px;
-            border-radius: 6px;
-            text-align: center;
-            font-size: 0.9rem;
-            font-weight: 500;
-        }
-
-        .estado.error {
-            background-color: #fff5f5;
-            color: var(--error-color);
-            border: 1px solid #feb2b2;
-        }
-
-        .estado.cargando {
-            background-color: #ebf8ff;
-            color: var(--accent-color);
-            border: 1px solid #bee3f8;
-        }
-
-        .estado.exito {
-            background-color: #f0fff4;
-            color: var(--success-color);
-            border: 1px solid #c6f6d5;
-        }
-
-        #seccionFormulario {
-            display: none;
-        }
-
-        .info-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-
-        @media (max-width: 600px) {
-            .info-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Formulario GPS</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 20px; font-family: Arial, sans-serif; background: #f2f4f7; }
+    .contenedor { max-width: 500px; margin: auto; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.10); }
+    h1 { text-align: center; margin-top: 0; color: #1f2937; }
+    .subtitulo { text-align: center; color: #6b7280; margin-bottom: 25px; line-height: 1.5; }
+    label { display: block; margin-top: 15px; margin-bottom: 6px; font-weight: bold; color: #374151; }
+    input, textarea { width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 16px; font-family: Arial, sans-serif; }
+    input:focus, textarea:focus { outline: none; border-color: #2563eb; }
+    textarea { min-height: 100px; resize: vertical; }
+    #seccionLogin { display: block; }
+    #seccionFormulario { display: none; }
+    #btnIngresar, #btnEnviar { width: 100%; padding: 14px; margin-top: 20px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; }
+    #btnIngresar { background: #2563eb; color: white; }
+    #btnIngresar:hover { background: #1d4ed8; }
+    #cedula { letter-spacing: 1px; }
+    #grado[readonly], #nombres[readonly], #pais[readonly], #agregaduria[readonly], #cargo[readonly], #telefonoCelular[readonly], #correoInstitucional[readonly], #correoAgregaduria[readonly], #embajadaInstitucion[readonly] { background: #f3f4f6; color: #374151; cursor: not-allowed; }
+    #estadoCedula { margin-top: 7px; font-size: 13px; line-height: 1.4; min-height: 18px; }
+    .cedula-buscando { color: #1d4ed8; }
+    .cedula-ok { color: #15803d; }
+    .cedula-error { color: #dc2626; }
+    .ubicacion { margin-top: 20px; padding: 15px; border-radius: 10px; background: #f3f4f6; text-align: center; }
+    .ubicacion-titulo { font-weight: bold; color: #1f2937; margin-bottom: 8px; }
+    #estadoUbicacion { color: #1d4ed8; font-size: 14px; line-height: 1.5; }
+    #btnEnviar { background: #16a34a; color: white; }
+    #btnEnviar:hover:not(:disabled) { background: #15803d; }
+    #btnEnviar:disabled { background: #9ca3af; cursor: not-allowed; }
+    .estado { margin-top: 15px; padding: 12px; border-radius: 8px; text-align: center; display: none; line-height: 1.4; }
+    .exito { display: block; background: #dcfce7; color: #166534; }
+    .error { display: block; background: #fee2e2; color: #991b1b; }
+    .cargando { display: block; background: #dbeafe; color: #1e40af; }
+  </style>
 </head>
 <body>
 
-    <div class="container">
-        <!-- SECCIÓN DE LOGIN -->
-        <div id="seccionLogin">
-            <h2>Acceso al Sistema</h2>
-            <div class="form-group">
-                <label for="usuarioLogin">Usuario:</label>
-                <input type="text" id="usuarioLogin" placeholder="Ingrese su usuario">
-            </div>
-            <div class="form-group">
-                <label for="claveLogin">Contraseña:</label>
-                <input type="password" id="claveLogin" placeholder="Ingrese su contraseña">
-            </div>
-            <button id="btnIngresar" onclick="iniciarSesion()">Ingresar</button>
-            <div id="estadoLogin"></div>
-        </div>
+<div class="contenedor">
+  <!-- SECCIÓN 1: LOGIN -->
+  <form id="seccionLogin" onsubmit="return false;">
+    <h1>🔐 Iniciar Sesión</h1>
+    <div class="subtitulo">Ingrese sus credenciales autorizadas para acceder al sistema.</div>
+    <label for="usuarioLogin">Usuario</label>
+    <input type="text" id="usuarioLogin" placeholder="Ingrese su usuario" autocomplete="off">
+    <label for="claveLogin">Contraseña</label>
+    <input type="password" id="claveLogin" placeholder="Ingrese sus credenciales" autocomplete="current-password">
+    <button type="button" id="btnIngresar" onclick="iniciarSesion()">🔑 Ingresar</button>
+    <div id="estadoLogin" class="estado"></div>
+  </form>
 
-        <!-- SECCIÓN DE FORMULARIO PRINCIPAL -->
-        <div id="seccionFormulario">
-            <h2>Registro de Operaciones</h2>
-            
-            <div class="form-group">
-                <label for="cedulaBuscar">Número de Cédula:</label>
-                <div style="display: flex; gap: 10px;">
-                    <input type="text" id="cedulaBuscar" placeholder="Ingrese cédula a buscar">
-                    <button type="button" onclick="buscarCedula()" style="width: 140px;">Buscar</button>
-                </div>
-            </div>
+  <!-- SECCIÓN 2: FORMULARIO GPS -->
+  <div id="seccionFormulario">
+    <h1>📍 Formulario GPS</h1>
+    <div class="subtitulo">Complete la información solicitada.<br>La ubicación se obtendrá automáticamente al enviar.</div>
 
-            <div class="info-grid">
-                <div class="form-group">
-                    <label>Grado:</label>
-                    <input type="text" id="grado" readonly>
-                </div>
-                <div class="form-group">
-                    <label>Nombres y Apellidos:</label>
-                    <input type="text" id="nombres" readonly>
-                </div>
-            </div>
+    <label for="cedula">Cédula</label>
+    <input type="text" id="cedula" placeholder="Ingrese su cédula" inputmode="numeric" autocomplete="off">
+    <div id="estadoCedula"></div>
 
-            <div class="info-grid">
-                <div class="form-group">
-                    <label>País:</label>
-                    <input type="text" id="pais" readonly>
-                </div>
-                <div class="form-group">
-                    <label>Agregaduría:</label>
-                    <input type="text" id="agregaduria" readonly>
-                </div>
-            </div>
+    <label for="grado">Grado</label>
+    <input type="text" id="grado" placeholder="Se completará automáticamente" readonly>
 
-            <div class="form-group">
-                <label>Cargo:</label>
-                <input type="text" id="cargo" readonly>
-            </div>
+    <label for="nombres">Nombres y apellidos</label>
+    <input type="text" id="nombres" placeholder="Se completará automáticamente" readonly>
 
-            <div class="info-grid">
-                <div class="form-group">
-                    <label>Teléfono Celular:</label>
-                    <input type="text" id="telefonoCelular" readonly>
-                </div>
-                <div class="form-group">
-                    <label>Correo Institucional:</label>
-                    <input type="text" id="correoInstitucional" readonly>
-                </div>
-            </div>
+    <label for="pais">País</label>
+    <input type="text" id="pais" placeholder="Se completará automáticamente" readonly>
 
-            <div class="info-grid">
-                <div class="form-group">
-                    <label>Correo Agregaduría:</label>
-                    <input type="text" id="correoAgregaduria" readonly>
-                </div>
-                <div class="form-group">
-                    <label>Embajada / Institución:</label>
-                    <input type="text" id="embajadaInstitucion" readonly>
-                </div>
-            </div>
+    <label for="agregaduria">Agregaduría / Representación</label>
+    <input type="text" id="agregaduria" placeholder="Se completará automáticamente" readonly>
 
-            <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;">
+    <label for="cargo">Cargo</label>
+    <input type="text" id="cargo" placeholder="Se completará automáticamente" readonly>
 
-            <div class="form-group">
-                <label for="horaIngreso">Hora de Ingreso:</label>
-                <input type="time" id="horaIngreso">
-            </div>
+    <label for="telefonoCelular">Teléfono celular</label>
+    <input type="text" id="telefonoCelular" placeholder="Se completará automáticamente" readonly>
 
-            <div class="form-group">
-                <label for="horaSalida">Hora de Salida:</label>
-                <input type="time" id="horaSalida">
-            </div>
+    <label for="correoInstitucional">Correo institucional</label>
+    <input type="text" id="correoInstitucional" placeholder="Se completará automáticamente" readonly>
 
-            <div class="form-group">
-                <label for="observacion">Observación:</label>
-                <textarea id="observacion" rows="3" placeholder="Detalles u observaciones..."></textarea>
-            </div>
+    <label for="correoAgregaduria">Correo de la agregaduría / representación policial</label>
+    <input type="text" id="correoAgregaduria" placeholder="Se completará automáticamente" readonly>
 
-            <div class="form-group">
-                <label for="archivoRespaldo">Archivo de Respaldo (Foto / PDF):</label>
-                <input type="file" id="archivoRespaldo">
-            </div>
+    <label for="embajadaInstitucion">Embajada / representación / institución</label>
+    <input type="text" id="embajadaInstitucion" placeholder="Se completará automáticamente" readonly>
 
-            <button id="btnGuardar" onclick="guardarDatosSistema()">Guardar Registro</button>
-            <div id="estadoFormulario"></div>
-        </div>
+    <label for="observacion">Observación</label>
+    <textarea id="observacion" placeholder="Ingrese una observación..."></textarea>
+
+    <label for="archivoRespaldo">Documento de respaldo (Foto o PDF)</label>
+    <input type="file" id="archivoRespaldo" accept="image/*,application/pdf">
+
+    <div class="ubicacion">
+      <div class="ubicacion-titulo">📍 Ubicación del dispositivo</div>
+      <div id="estadoUbicacion">La ubicación se obtendrá automáticamente al enviar el formulario.</div>
     </div>
 
-    <script>
-        const URL_API = "https://script.google.com/macros/s/AKfycbzS9uBi3ep_3Of16cPd6hNh4FMbmkklB0KqGOdoC5LG8GiwDCVF1Sz7XLw7cDRpqBVK/exec";
+    <button type="button" id="btnEnviar" onclick="enviarFormulario()">📤 Enviar formulario</button>
+    <div id="estado" class="estado"></div>
+  </div>
+</div>
 
-        async function llamarAPI(datos) {
-            try {
-                const response = await fetch(URL_API, {
-                    method: "POST",
-                    body: JSON.stringify(datos),
-                    headers: { "Content-Type": "text/plain;charset=utf-8" }
-                });
-                return await response.json();
-            } catch (error) {
-                throw new Error("Error de red con el servidor: " + error.message);
-            }
+<script>
+  // ⚠️ REEMPLAZA ESTA URL CON TU URL DE LA APLICACIÓN WEB DE GOOGLE APPS SCRIPT (TERMINADA EN /exec)
+  const URL_API = "https://script.google.com/macros/s/AKfycbyq09v_miFAMYnEm0kI93rkVb_0P_zycJK4_DldOFZm6Oh18_p4WBCYbzT8F0bdLupq/exec";
+
+  async function llamarAPI(payload) {
+    try {
+      const response = await fetch(URL_API, {
+        method: "POST",
+        body: JSON.stringify(payload)
+      });
+      return await response.json();
+    } catch (error) {
+      throw new Error("Error de red con el servidor: " + error.message);
+    }
+  }
+
+  function iniciarSesion() {
+    const usuario = document.getElementById("usuarioLogin").value.trim();
+    const clave = document.getElementById("claveLogin").value.trim();
+    const btnIngresar = document.getElementById("btnIngresar");
+
+    if (!usuario || !clave) {
+      mostrarEstadoLogin("⚠️ Ingrese usuario y contraseña.", "error");
+      return;
+    }
+
+    btnIngresar.disabled = true;
+    mostrarEstadoLogin("Validando credenciales...", "cargando");
+
+    const procesarLogin = (lat = "", lon = "") => {
+      llamarAPI({ accion: "verificarLogin", usuario, clave, lat, lon })
+        .then(res => {
+          if (res && res.exito) {
+            document.getElementById("seccionLogin").style.display = "none";
+            document.getElementById("seccionFormulario").style.display = "block";
+            mostrarEstadoLogin("", "estado");
+          } else {
+            mostrarEstadoLogin(res ? res.mensaje : "Error de respuesta", "error");
+          }
+          btnIngresar.disabled = false;
+        })
+        .catch(err => {
+          mostrarEstadoLogin("❌ " + err.message, "error");
+          btnIngresar.disabled = false;
+        });
+    };
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        pos => procesarLogin(pos.coords.latitude, pos.coords.longitude),
+        () => procesarLogin("", ""),
+        { timeout: 5000, maximumAge: 60000 }
+      );
+    } else {
+      procesarLogin("", "");
+    }
+  }
+
+  function mostrarEstadoLogin(mensaje, tipo) {
+    const estado = document.getElementById("estadoLogin");
+    estado.textContent = mensaje;
+    estado.className = "estado " + tipo;
+  }
+
+  let cedulaValida = false;
+  let temporizadorCedula = null;
+  let ultimaCedulaBuscada = "";
+
+  const campoCedula = document.getElementById("cedula");
+  const campoGrado = document.getElementById("grado");
+  const campoNombres = document.getElementById("nombres");
+  const campoPais = document.getElementById("pais");
+  const campoAgregaduria = document.getElementById("agregaduria");
+  const campoCargo = document.getElementById("cargo");
+  const campoTelefonoCelular = document.getElementById("telefonoCelular");
+  const campoCorreoInstitucional = document.getElementById("correoInstitucional");
+  const campoCorreoAgregaduria = document.getElementById("correoAgregaduria");
+  const campoEmbajadaInstitucion = document.getElementById("embajadaInstitucion");
+  const estadoCedula = document.getElementById("estadoCedula");
+  const botonEnviar = document.getElementById("btnEnviar");
+
+  campoCedula.addEventListener("input", function() {
+    this.value = this.value.replace(/\D/g, "");
+    cedulaValida = false;
+    ultimaCedulaBuscada = "";
+
+    [campoGrado, campoNombres, campoPais, campoAgregaduria, campoCargo, campoTelefonoCelular, campoCorreoInstitucional, campoCorreoAgregaduria, campoEmbajadaInstitucion].forEach(c => c.value = "");
+    estadoCedula.textContent = "";
+    estadoCedula.className = "";
+
+    clearTimeout(temporizadorCedula);
+    const cedula = this.value.trim();
+    if (!cedula) return;
+
+    estadoCedula.textContent = "🔎 Buscando cédula...";
+    estadoCedula.className = "cedula-buscando";
+
+    temporizadorCedula = setTimeout(() => buscarCedulaEnServidor(cedula), 700);
+  });
+
+  function buscarCedulaEnServidor(cedula) {
+    ultimaCedulaBuscada = cedula;
+    llamarAPI({ accion: "buscarCedula", cedula })
+      .then(respuesta => {
+        if (campoCedula.value.trim() !== ultimaCedulaBuscada) return;
+        if (respuesta && respuesta.encontrada) {
+          cedulaValida = true;
+          campoGrado.value = respuesta.grado || "";
+          campoNombres.value = respuesta.nombres || "";
+          campoPais.value = respuesta.pais || "";
+          campoAgregaduria.value = respuesta.agregaduria || "";
+          campoCargo.value = respuesta.cargo || "";
+          campoTelefonoCelular.value = respuesta.telefonoCelular || "";
+          campoCorreoInstitucional.value = respuesta.correoInstitucional || "";
+          campoCorreoAgregaduria.value = respuesta.correoAgregaduria || "";
+          campoEmbajadaInstitucion.value = respuesta.embajadaInstitucion || "";
+          estadoCedula.textContent = "✅ Persona encontrada.";
+          estadoCedula.className = "cedula-ok";
+        } else {
+          cedulaValida = false;
+          estadoCedula.textContent = (respuesta && respuesta.mensaje) ? respuesta.mensaje : "⚠️ Cédula no encontrada.";
+          estadoCedula.className = "cedula-error";
         }
+      })
+      .catch(() => {
+        cedulaValida = false;
+        estadoCedula.textContent = "❌ Error al consultar la base.";
+        estadoCedula.className = "cedula-error";
+      });
+  }
 
-        async function iniciarSesion() {
-            const usuario = document.getElementById("usuarioLogin").value.trim();
-            const clave = document.getElementById("claveLogin").value.trim();
-            const btnIngresar = document.getElementById("btnIngresar");
+  function enviarFormulario() {
+    if (botonEnviar.disabled) return;
 
-            if (!usuario || !clave) {
-                mostrarEstadoLogin("⚠️ Ingrese usuario y contraseña.", "error");
-                return;
-            }
+    const ahoraEnvio = new Date();
+    const horasEnvio = ahoraEnvio.getHours();
+    const minutosEnvio = ahoraEnvio.getMinutes();
+    const horaActualDecimal = horasEnvio + (minutosEnvio / 60);
+    const horaActualStr = String(horasEnvio).padStart(2, '0') + ":" + String(minutosEnvio).padStart(2, '0');
 
-            const ahora = new Date();
-            const horas = ahora.getHours();
-            const minutos = ahora.getMinutes();
-            const horaMinDecimal = horas + (minutos / 60);
-            const horaActualStr = String(horas).padStart(2, '0') + ":" + String(minutos).padStart(2, '0');
+    let horaIngresoFinal = "";
+    let horaSalidaFinal = "";
+    const esHorarioIngreso = (horaActualDecimal >= 7.0 && horaActualDecimal <= 10.0);
+    const esHorarioSalida = (horaActualDecimal >= 17.0 && horaActualDecimal <= 22.0);
 
-            const esHorarioValido = (horaMinDecimal >= 7.0 && horaMinDecimal <= 9.0) || (horaMinDecimal >= 17.0 && horaMinDecimal <= 22.0);
+    if (!esHorarioIngreso && !esHorarioSalida) {
+      mostrarEstado("⚠️ Envío denegado. Horario permitido: Ingresos de 07H00 a 10H00, Salidas de 17H00 a 22H00. Hora actual: " + horaActualStr, "error");
+      return;
+    }
 
-            if (!esHorarioValido) {
-                mostrarEstadoLogin("⚠️ Acceso denegado. Las horas permitidas son de 07H00 a 10H00 o de 17H00 a 22H00. Hora actual en su país: " + horaActualStr, "error");
-                btnIngresar.disabled = true;
+    if (esHorarioIngreso) {
+      horaIngresoFinal = horaActualStr + ":" + String(ahoraEnvio.getSeconds()).padStart(2, '0');
+    } else {
+      horaSalidaFinal = horaActualStr + ":" + String(ahoraEnvio.getSeconds()).padStart(2, '0');
+    }
 
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(
-                        function(position) {
-                            const lat = position.coords.latitude;
-                            const lon = position.coords.longitude;
-                            
-                            mostrarEstadoLogin("⚠️ Acceso denegado. Las horas permitidas son de 07H00 a 10H00 o de 17H00 a 22H00. Hora actual en su país: " + horaActualStr, "error");
-                            llamarAPI({ accion: "notificarAccesoFueraDeHorario", usuario: usuario, hora: horaActualStr, lat: lat, lon: lon });
-                            btnIngresar.disabled = false;
-                        },
-                        function(error) {
-                            mostrarEstadoLogin("⚠️ Acceso denegado. (No se pudo obtener la ubicación GPS).", "error");
-                            llamarAPI({ accion: "notificarAccesoFueraDeHorario", usuario: usuario, hora: horaActualStr, lat: null, lon: null });
-                            btnIngresar.disabled = false;
-                        },
-                        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-                    );
-                } else {
-                    llamarAPI({ accion: "notificarAccesoFueraDeHorario", usuario: usuario, hora: horaActualStr, lat: null, lon: null });
-                    mostrarEstadoLogin("⚠️ Acceso denegado. Las horas permitidas son de 07H00 a 10H00 o de 17H00 a 22H00.", "error");
-                    btnIngresar.disabled = false;
-                }
-                return;
-            }
+    const cedula = campoCedula.value.trim();
+    if (!cedula || !cedulaValida) {
+      mostrarEstado("⚠️ Ingrese una cédula válida existente en la base.", "error");
+      campoCedula.focus();
+      return;
+    }
 
-            btnIngresar.disabled = true;
-            mostrarEstadoLogin("Validando credenciales...", "cargando");
+    const observacion = document.getElementById("observacion").value.trim();
+    const archivoInput = document.getElementById("archivoRespaldo");
+    botonEnviar.disabled = true;
 
-            try {
-                const res = await llamarAPI({ accion: "verificarLogin", usuario: usuario, clave: clave });
-                if (res && res.exito) {
-                    document.getElementById("seccionLogin").style.display = "none";
-                    document.getElementById("seccionFormulario").style.display = "block";
-                    mostrarEstadoLogin("", "estado");
-                    btnIngresar.disabled = false;
-                } else {
-                    mostrarEstadoLogin(res ? res.mensaje : "Error de respuesta del servidor", "error");
-                    btnIngresar.disabled = false;
-                }
-            } catch (err) {
-                mostrarEstadoLogin("❌ Error de conexión: " + err.message, "error");
-                btnIngresar.disabled = false;
-            }
-        }
+    const procesarEnvioConArchivo = (objetoArchivo) => {
+      mostrarEstado("📍 Obteniendo ubicación del dispositivo...", "cargando");
+      document.getElementById("estadoUbicacion").textContent = "📍 Solicitando ubicación...";
 
-        function mostrarEstadoLogin(mensaje, tipo) {
-            const estado = document.getElementById("estadoLogin");
-            estado.textContent = mensaje;
-            estado.className = "estado " + tipo;
-        }
+      if (!navigator.geolocation) {
+        mostrarEstado("❌ El navegador no soporta geolocalización.", "error");
+        botonEnviar.disabled = false;
+        return;
+      }
 
-        async function buscarCedula() {
-            const cedula = document.getElementById("cedulaBuscar").value.trim();
-            if (!cedula) {
-                alert("Por favor ingrese un número de cédula.");
-                return;
-            }
+      navigator.geolocation.getCurrentPosition(
+        position => {
+          const datos = {
+            grado: campoGrado.value.trim(),
+            nombres: campoNombres.value.trim(),
+            pais: campoPais.value.trim(),
+            agregaduria: campoAgregaduria.value.trim(),
+            cargo: campoCargo.value.trim(),
+            telefonoCelular: campoTelefonoCelular.value.trim(),
+            correoInstitucional: campoCorreoInstitucional.value.trim(),
+            correoAgregaduria: campoCorreoAgregaduria.value.trim(),
+            embajadaInstitucion: campoEmbajadaInstitucion.value.trim(),
+            cedula: cedula,
+            horaIngreso: horaIngresoFinal,
+            horaSalida: horaSalidaFinal,
+            observacion: observacion,
+            archivo: objetoArchivo,
+            latitud: position.coords.latitude,
+            longitud: position.coords.longitude,
+            precision: position.coords.accuracy
+          };
 
-            try {
-                const res = await llamarAPI({ accion: "buscarCedula", cedula: cedula });
-                if (res && res.encontrada) {
-                    document.getElementById("grado").value = res.grado;
-                    document.getElementById("nombres").value = res.nombres;
-                    document.getElementById("pais").value = res.pais;
-                    document.getElementById("agregaduria").value = res.agregaduria;
-                    document.getElementById("cargo").value = res.cargo;
-                    document.getElementById("telefonoCelular").value = res.telefonoCelular;
-                    document.getElementById("correoInstitucional").value = res.correoInstitucional;
-                    document.getElementById("correoAgregaduria").value = res.correoAgregaduria;
-                    document.getElementById("embajadaInstitucion").value = res.embajadaInstitucion;
-                } else {
-                    alert(res.mensaje || "Cédula no encontrada.");
-                }
-            } catch (err) {
-                alert("Error al buscar cédula: " + err.message);
-            }
-        }
+          mostrarEstado("📤 Enviando información...", "cargando");
+          llamarAPI({ accion: "guardarDatos", datos })
+            .then(respuesta => {
+              if (respuesta && respuesta.exito) {
+                mostrarEstado("✅ " + respuesta.mensaje, "exito");
+                campoCedula.value = "";
+                [campoGrado, campoNombres, campoPais, campoAgregaduria, campoCargo, campoTelefonoCelular, campoCorreoInstitucional, campoCorreoAgregaduria, campoEmbajadaInstitucion].forEach(c => c.value = "");
+                document.getElementById("observacion").value = "";
+                archivoInput.value = "";
+                cedulaValida = false;
+                estadoCedula.textContent = "";
+                
+                setTimeout(() => {
+                  document.getElementById("seccionFormulario").style.display = "none";
+                  document.getElementById("seccionLogin").style.display = "block";
+                  document.getElementById("usuarioLogin").value = "";
+                  document.getElementById("claveLogin").value = "";
+                  document.getElementById("estadoLogin").className = "estado";
+                  document.getElementById("btnIngresar").disabled = false;
+                  document.getElementById("estado").className = "estado";
+                }, 2000);
+              } else {
+                mostrarEstado("❌ " + (respuesta ? respuesta.mensaje : "Error desconocido"), "error");
+              }
+              botonEnviar.disabled = false;
+            })
+            .catch(err => {
+              mostrarEstado("❌ " + err.message, "error");
+              botonEnviar.disabled = false;
+            });
+        },
+        error => {
+          let msg = "⚠️ No fue posible obtener la ubicación.";
+          if (error.code === error.PERMISSION_DENIED) msg = "⚠️ Debe permitir el acceso a la ubicación.";
+          mostrarEstado(msg, "error");
+          document.getElementById("estadoUbicacion").textContent = msg;
+          botonEnviar.disabled = false;
+        },
+        { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }
+      );
+    };
 
-        async function guardarDatosSistema() {
-            const btnGuardar = document.getElementById("btnGuardar");
-            const estadoForm = document.getElementById("estadoFormulario");
-            
-            const cedula = document.getElementById("cedulaBuscar").value.trim();
-            if (!cedula) {
-                alert("Debe buscar y cargar los datos de una cédula primero.");
-                return;
-            }
+    if (archivoInput.files.length > 0) {
+      const file = archivoInput.files[0];
+      const reader = new FileReader();
+      mostrarEstado("📁 Leyendo documento de respaldo...", "cargando");
+      reader.onload = e => {
+        procesarEnvioConArchivo({
+          nombre: file.name,
+          tipo: file.type,
+          bytes: e.target.result.split(',')[1]
+        });
+      };
+      reader.onerror = () => {
+        mostrarEstado("❌ Error al leer el archivo.", "error");
+        botonEnviar.disabled = false;
+      };
+      reader.readAsDataURL(file);
+    } else {
+      procesarEnvioConArchivo(null);
+    }
+  }
 
-            btnGuardar.disabled = true;
-            estadoForm.textContent = "Obteniendo ubicación GPS y enviando datos...";
-            estadoForm.className = "estado cargando";
+  function mostrarEstado(mensaje, tipo) {
+    const estado = document.getElementById("estado");
+    estado.textContent = mensaje;
+    estado.className = "estado " + tipo;
+  }
+</script>
 
-            const enviarInformacion = async (lat = "", lon = "", precision = "") => {
-                let archivoData = null;
-                const fileInput = document.getElementById("archivoRespaldo");
-
-                if (fileInput.files.length > 0) {
-                    const file = fileInput.files[0];
-                    const reader = new FileReader();
-                    
-                    reader.onload = async function(e) {
-                        const base64Content = e.target.result.split(',')[1];
-                        archivoData = {
-                            bytes: base64Content,
-                            tipo: file.type,
-                            nombre: file.name
-                        };
-                        await ejecutarGuardadoAPI(lat, lon, precision, archivoData);
-                    };
-                    reader.readAsDataURL(file);
-                } else {
-                    await ejecutarGuardadoAPI(lat, lon, precision, null);
-                }
-            };
-
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    pos => enviarInformacion(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy),
-                    () => enviarInformacion("", "", ""),
-                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-                );
-            } else {
-                enviarInformacion("", "", "");
-            }
-        }
-
-        async function ejecutarGuardadoAPI(lat, lon, precision, archivo) {
-            const datosPayload = {
-                cedula: document.getElementById("cedulaBuscar").value,
-                grado: document.getElementById("grado").value,
-                nombres: document.getElementById("nombres").value,
-                pais: document.getElementById("pais").value,
-                agregaduria: document.getElementById("agregaduria").value,
-                cargo: document.getElementById("cargo").value,
-                telefonoCelular: document.getElementById("telefonoCelular").value,
-                correoInstitucional: document.getElementById("correoInstitucional").value,
-                correoAgregaduria: document.getElementById("correoAgregaduria").value,
-                embajadaInstitucion: document.getElementById("embajadaInstitucion").value,
-                horaIngreso: document.getElementById("horaIngreso").value,
-                horaSalida: document.getElementById("horaSalida").value,
-                observacion: document.getElementById("observacion").value,
-                latitud: lat,
-                longitud: lon,
-                precision: precision,
-                archivo: archivo
-            };
-
-            try {
-                const res = await llamarAPI({ accion: "guardarDatos", datos: datosPayload });
-                const estadoForm = document.getElementById("estadoFormulario");
-                if (res && res.exito) {
-                    estadoForm.textContent = "✅ " + res.mensaje;
-                    estadoForm.className = "estado exito";
-                    document.getElementById("observacion").value = "";
-                    document.getElementById("archivoRespaldo").value = "";
-                } else {
-                    estadoForm.textContent = "❌ " + (res ? res.mensaje : "Error desconocido");
-                    estadoForm.className = "estado error";
-                }
-            } catch (err) {
-                const estadoForm = document.getElementById("estadoFormulario");
-                estadoForm.textContent = "❌ Error de conexión: " + err.message;
-                estadoForm.className = "estado error";
-            } finally {
-                document.getElementById("btnGuardar").disabled = false;
-            }
-        }
-    </script>
 </body>
 </html>
