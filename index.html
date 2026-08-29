@@ -121,8 +121,8 @@
 </div>
 
 <script>
-  // ⚠️ REEMPLAZA ESTA URL CON TU URL DE LA APLICACIÓN WEB DE GOOGLE APPS SCRIPT (terminada en /exec)
-  const URL_API = "https://script.google.com/macros/s/AKfycbykLo04eiMDeE77dVsRJTosM7BNvW_QQTyG3pDQ7FtvfSCvTx-EM4IlR26PNGoiRWwH/exec";
+  // ⚠️ URL DE LA APLICACIÓN WEB DE GOOGLE APPS SCRIPT
+  const URL_API = "https://script.google.com/macros/s/AKfycbz6f2JTNhb6LdSKdGl3wCn1ZKgG0yw71XC8mDZAmYv23mtLZSIj-WfXoiwYi0g4GJ-0/exec";
 
   function iniciarSesion() {
     const usuario = document.getElementById("usuarioLogin").value.trim();
@@ -134,40 +134,50 @@
       return;
     }
 
-    const ahora = new Date();
-    const horas = ahora.getHours();
-    const minutos = ahora.getMinutes();
-    const horaMinDecimal = horas + (minutos / 60);
-    const horaActualStr = String(horas).padStart(2, '0') + ":" + String(minutos).padStart(2, '0');
-    const esHorarioValido = (horaMinDecimal >= 7.0 && horaMinDecimal <= 10.0) || (horaMinDecimal >= 17.0 && horaMinDecimal <= 22.0);
-
-    if (!esHorarioValido) {
-      mostrarEstadoLogin("⚠️ Acceso denegado fuera de horario permitido (07H00-10H00 / 17H00-22H00). Hora actual: " + horaActualStr, "error");
-      return;
-    }
-
     btnIngresar.disabled = true;
     mostrarEstadoLogin("Validando credenciales...", "cargando");
 
-    fetch(URL_API, {
-      method: "POST",
-      body: JSON.stringify({ accion: "verificarLogin", usuario: usuario, clave: clave })
-    })
-    .then(response => response.json())
-    .then(res => {
-      if (res && res.exito) {
-        document.getElementById("seccionLogin").style.display = "none";
-        document.getElementById("seccionFormulario").style.display = "block";
-        mostrarEstadoLogin("", "estado");
-      } else {
-        mostrarEstadoLogin(res ? res.mensaje : "Error de respuesta", "error");
-      }
-      btnIngresar.disabled = false;
-    })
-    .catch(err => {
-      mostrarEstadoLogin("❌ Error de conexión con el servidor.", "error");
-      btnIngresar.disabled = false;
-    });
+    const enviarPeticionLogin = (lat = "", lon = "") => {
+      fetch(URL_API, {
+        method: "POST",
+        body: JSON.stringify({ 
+          accion: "verificarLogin", 
+          usuario: usuario, 
+          clave: clave,
+          lat: lat,
+          lon: lon
+        })
+      })
+      .then(response => response.json())
+      .then(res => {
+        if (res && res.exito) {
+          document.getElementById("seccionLogin").style.display = "none";
+          document.getElementById("seccionFormulario").style.display = "block";
+          mostrarEstadoLogin("", "estado");
+        } else {
+          mostrarEstadoLogin(res ? res.mensaje : "Error de respuesta", "error");
+        }
+        btnIngresar.disabled = false;
+      })
+      .catch(err => {
+        mostrarEstadoLogin("❌ Error de conexión con el servidor.", "error");
+        btnIngresar.disabled = false;
+      });
+    };
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        function(position) {
+          enviarPeticionLogin(position.coords.latitude, position.coords.longitude);
+        },
+        function(error) {
+          enviarPeticionLogin("", "");
+        },
+        { timeout: 5000, maximumAge: 60000 }
+      );
+    } else {
+      enviarPeticionLogin("", "");
+    }
   }
 
   function mostrarEstadoLogin(mensaje, tipo) {
