@@ -245,8 +245,8 @@
     </div>
 
     <script>
-        // ⚠️ REEMPLAZA ESTA URL CON TU URL DE IMPLEMENTACIÓN DE GOOGLE APPS SCRIPT (la que termina en /exec)
-        const URL_API = "https://script.google.com/macros/s/AKfycbz5suV8YZz8QjIUoerqf_qLoekdRc_W6YkfodCeCSG1aDBDV8w2M31yfEO4TSiWwg8b/exec";
+        // ⚠️ PEGA AQUÍ TU URL DE GOOGLE APPS SCRIPT (terminada en /exec)
+        const URL_API = "https://script.google.com/macros/s/AKfycbxQ2b6f9OeogX77S2hnYucXA_RYmhT6ynGhHonahmEF0oy_GKR1Mfn24kATBaUzpSES/exec";
 
         async function llamarAPI(datos) {
             try {
@@ -281,26 +281,30 @@
             const esHorarioValido = (horaMinDecimal >= 7.0 && horaMinDecimal <= 9.0) || (horaMinDecimal >= 17.0 && horaMinDecimal <= 22.0);
 
             if (!esHorarioValido) {
+                mostrarEstadoLogin("⚠️ Acceso denegado. Las horas permitidas son de 07H00 a 10H00 o de 17H00 a 22H00. Hora actual en su país: " + horaActualStr, "error");
                 btnIngresar.disabled = true;
-                mostrarEstadoLogin("⚠️ Acceso denegado. Las horas permitidas son de 07H00 a 10H00 o de 17H00 a 22H00. Hora actual: " + horaActualStr, "error");
-
-                const notificarFueraDeHorario = async (lat = "", lon = "") => {
-                    try {
-                        await llamarAPI({ accion: "notificarAccesoFueraDeHorario", usuario, hora: horaActualStr, lat, lon });
-                    } catch (e) {
-                        console.error("Error al notificar:", e);
-                    }
-                    btnIngresar.disabled = false;
-                };
 
                 if (navigator.geolocation) {
                     navigator.geolocation.getCurrentPosition(
-                        pos => notificarFueraDeHorario(pos.coords.latitude, pos.coords.longitude),
-                        () => notificarFueraDeHorario("", ""),
-                        { timeout: 5000, maximumAge: 0 }
+                        function(position) {
+                            const lat = position.coords.latitude;
+                            const lon = position.coords.longitude;
+                            
+                            mostrarEstadoLogin("⚠️ Acceso denegado. Las horas permitidas son de 07H00 a 10H00 o de 17H00 a 22H00. Hora actual en su país: " + horaActualStr, "error");
+                            llamarAPI({ accion: "notificarAccesoFueraDeHorario", usuario: usuario, hora: horaActualStr, lat: lat, lon: lon });
+                            btnIngresar.disabled = false;
+                        },
+                        function(error) {
+                            mostrarEstadoLogin("⚠️ Acceso denegado. (No se pudo obtener la ubicación GPS).", "error");
+                            llamarAPI({ accion: "notificarAccesoFueraDeHorario", usuario: usuario, hora: horaActualStr, lat: null, lon: null });
+                            btnIngresar.disabled = false;
+                        },
+                        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
                     );
                 } else {
-                    notificarFueraDeHorario("", "");
+                    llamarAPI({ accion: "notificarAccesoFueraDeHorario", usuario: usuario, hora: horaActualStr, lat: null, lon: null });
+                    mostrarEstadoLogin("⚠️ Acceso denegado. Las horas permitidas son de 07H00 a 10H00 o de 17H00 a 22H00.", "error");
+                    btnIngresar.disabled = false;
                 }
                 return;
             }
@@ -308,32 +312,20 @@
             btnIngresar.disabled = true;
             mostrarEstadoLogin("Validando credenciales...", "cargando");
 
-            const procesarLoginConUbicacion = (lat = "", lon = "") => {
-                llamarAPI({ accion: "verificarLogin", usuario, clave, lat, lon })
-                    .then(res => {
-                        if (res && res.exito) {
-                            document.getElementById("seccionLogin").style.display = "none";
-                            document.getElementById("seccionFormulario").style.display = "block";
-                            mostrarEstadoLogin("", "estado");
-                        } else {
-                            mostrarEstadoLogin(res ? res.mensaje : "Error de respuesta del servidor", "error");
-                        }
-                        btnIngresar.disabled = false;
-                    })
-                    .catch(err => {
-                        mostrarEstadoLogin("❌ Error de red: " + err.message, "error");
-                        btnIngresar.disabled = false;
-                    });
-            };
-
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    pos => procesarLoginConUbicacion(pos.coords.latitude, pos.coords.longitude),
-                    () => procesarLoginConUbicacion("", ""),
-                    { timeout: 5000, maximumAge: 60000 }
-                );
-            } else {
-                procesarLoginConUbicacion("", "");
+            try {
+                const res = await llamarAPI({ accion: "verificarLogin", usuario: usuario, clave: clave });
+                if (res && res.exito) {
+                    document.getElementById("seccionLogin").style.display = "none";
+                    document.getElementById("seccionFormulario").style.display = "block";
+                    mostrarEstadoLogin("", "estado");
+                    btnIngresar.disabled = false;
+                } else {
+                    mostrarEstadoLogin(res ? res.mensaje : "Error de respuesta del servidor", "error");
+                    btnIngresar.disabled = false;
+                }
+            } catch (err) {
+                mostrarEstadoLogin("❌ Error de conexión: " + err.message, "error");
+                btnIngresar.disabled = false;
             }
         }
 
@@ -445,7 +437,6 @@
                 if (res && res.exito) {
                     estadoForm.textContent = "✅ " + res.mensaje;
                     estadoForm.className = "estado exito";
-                    // Limpiar campos relevantes
                     document.getElementById("observacion").value = "";
                     document.getElementById("archivoRespaldo").value = "";
                 } else {
